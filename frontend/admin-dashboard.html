@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Parking Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-parking text-2xl"></i>
+                    <span class="text-xl font-bold">Parking Admin</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userName" class="text-sm"></span>
+                    <button onclick="logout()"
+                        class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Spaces -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Spaces</p>
+                        <p id="totalSpaces" class="text-3xl font-bold text-gray-800">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-full">
+                        <i class="fas fa-parking text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Available</p>
+                        <p id="availableSpaces" class="text-3xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupied -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Occupied</p>
+                        <p id="occupiedSpaces" class="text-3xl font-bold text-orange-600">0</p>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-full">
+                        <i class="fas fa-car text-orange-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Revenue</p>
+                        <p id="totalRevenue" class="text-3xl font-bold text-purple-600">$0</p>
+                    </div>
+                    <div class="bg-purple-100 p-4 rounded-full">
+                        <i class="fas fa-dollar-sign text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button onclick="switchTab('spaces')" id="tabSpaces"
+                        class="tab-button active px-6 py-4 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600">
+                        <i class="fas fa-parking mr-2"></i>Parking Spaces
+                    </button>
+                    <button onclick="switchTab('transactions')" id="tabTransactions"
+                        class="tab-button px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-receipt mr-2"></i>Transactions
+                    </button>
+                    <button onclick="switchTab('users')" id="tabUsers"
+                        class="tab-button px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-users mr-2"></i>Users
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6">
+
+                <!-- Parking Spaces Tab -->
+                <div id="contentSpaces" class="tab-content">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">Manage Parking Spaces</h2>
+                        <button onclick="openAddSpaceModal()"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                            <i class="fas fa-plus mr-2"></i>Add Space
+                        </button>
+                    </div>
+                    <div id="spacesList" class="space-y-4">
+                        <!-- Spaces will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Transactions Tab -->
+                <div id="contentTransactions" class="tab-content hidden">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Transactions</h2>
+                    <div id="transactionsList">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="contentUsers" class="tab-content hidden">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Registered Users</h2>
+                    <div id="usersList">
+                        <!-- Users will be loaded here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add Space Modal -->
+    <div id="addSpaceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">Add Parking Space</h3>
+            <form id="addSpaceForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Space Number</label>
+                    <input type="text" id="spaceNumber" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        placeholder="e.g., A01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Type</label>
+                    <select id="spaceType"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="regular">Regular</option>
+                        <option value="handicap">Handicap</option>
+                        <option value="ev_charging">EV Charging</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Hourly Rate ($)</label>
+                    <input type="number" id="hourlyRate" required min="1"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="5">
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-plus mr-2"></i>Add Space
+                    </button>
+                    <button type="button" onclick="closeAddSpaceModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        // Protect page - only admin
+        protectPage(['admin']);
+
+        const user = getCurrentUser();
+        document.getElementById('userName').textContent = user.name;
+
+        let currentTab = 'spaces';
+
+        // Load dashboard data
+        async function loadDashboard() {
+            await loadStats();
+            await loadSpaces();
+        }
+
+        // Load statistics
+        async function loadStats() {
+            const stats = await apiCall('/parking/stats');
+            if (stats && stats.success) {
+                document.getElementById('totalSpaces').textContent = stats.stats.total;
+                document.getElementById('availableSpaces').textContent = stats.stats.available;
+                document.getElementById('occupiedSpaces').textContent = stats.stats.occupied;
+            }
+
+            const revenue = await apiCall('/transactions/stats/revenue');
+            if (revenue && revenue.success) {
+                document.getElementById('totalRevenue').textContent = formatCurrency(revenue.stats.totalRevenue);
+            }
+        }
+
+        // Load parking spaces
+        async function loadSpaces() {
+            showLoading('spacesList');
+            const data = await apiCall('/parking/spaces');
+
+            if (data && data.success) {
+                const spacesList = document.getElementById('spacesList');
+
+                if (data.spaces.length === 0) {
+                    spacesList.innerHTML = '<p class="text-gray-500 text-center py-8">No parking spaces found. Add your first space!</p>';
+                    return;
+                }
+
+                spacesList.innerHTML = data.spaces.map(space => `
+                    <div class="border rounded-lg p-4 flex items-center justify-between hover:shadow-md transition">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center ${space.status === 'available' ? 'bg-green-100 text-green-600' :
+                        space.status === 'occupied' ? 'bg-orange-100 text-orange-600' :
+                            'bg-gray-100 text-gray-600'
+                    }">
+                                <i class="fas fa-parking text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">${space.spaceNumber}</h3>
+                                <p class="text-sm text-gray-600">
+                                    ${space.type.replace('_', ' ').toUpperCase()} - $${space.hourlyRate}/hr
+                                </p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full ${space.status === 'available' ? 'bg-green-100 text-green-700' :
+                        space.status === 'occupied' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-700'
+                    }">
+                                    ${space.status.toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="deleteSpace('${space._id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-indigo-600', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active', 'border-indigo-600', 'text-indigo-600');
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('border-transparent', 'text-gray-500');
+
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+
+            // Load data based on tab
+            if (tab === 'transactions') loadTransactions();
+            if (tab === 'users') loadUsers();
+        }
+
+        // Load transactions
+        async function loadTransactions() {
+            showLoading('transactionsList');
+            const data = await apiCall('/transactions?status=completed');
+
+            if (data && data.success) {
+                const list = document.getElementById('transactionsList');
+
+                if (data.transactions.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-8">No transactions found</p>';
+                    return;
+                }
+
+                list.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">License Plate</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Space</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Duration</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Fee</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                ${data.transactions.map(t => `
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">${t.vehicleId?.licensePlate || 'N/A'}</td>
+                                        <td class="px-4 py-3">${t.parkingSpaceId?.spaceNumber || 'N/A'}</td>
+                                        <td class="px-4 py-3">${t.duration} hr(s)</td>
+                                        <td class="px-4 py-3 font-bold text-green-600">${formatCurrency(t.totalFee)}</td>
+                                        <td class="px-4 py-3 text-sm">${formatDate(t.exitTime)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        }
+
+        // Load users
+        async function loadUsers() {
+            showLoading('usersList');
+            // Note: You'd need to create an endpoint to get all users
+            document.getElementById('usersList').innerHTML = '<p class="text-gray-500 text-center py-8">User management feature coming soon...</p>';
+        }
+
+        // Modal functions
+        function openAddSpaceModal() {
+            document.getElementById('addSpaceModal').classList.remove('hidden');
+        }
+
+        function closeAddSpaceModal() {
+            document.getElementById('addSpaceModal').classList.add('hidden');
+            document.getElementById('addSpaceForm').reset();
+        }
+
+        // Add space form
+        document.getElementById('addSpaceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const spaceNumber = document.getElementById('spaceNumber').value;
+            const type = document.getElementById('spaceType').value;
+            const hourlyRate = document.getElementById('hourlyRate').value;
+
+            const result = await apiCall('/parking/spaces', {
+                method: 'POST',
+                body: JSON.stringify({ spaceNumber, type, hourlyRate: parseFloat(hourlyRate) })
+            });
+
+            if (result && result.success) {
+                showToast('Parking space added successfully!', 'success');
+                closeAddSpaceModal();
+                loadDashboard();
+            } else {
+                showToast(result?.message || 'Failed to add space', 'error');
+            }
+        });
+
+        // Delete space
+        async function deleteSpace(spaceId) {
+            if (!confirmDialog('Are you sure you want to delete this parking space?')) return;
+
+            const result = await apiCall(`/parking/spaces/${spaceId}`, {
+                method: 'DELETE'
+            });
+
+            if (result && result.success) {
+                showToast('Parking space deleted successfully!', 'success');
+                loadDashboard();
+            } else {
+                showToast(result?.message || 'Failed to delete space', 'error');
+            }
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+
+</html>

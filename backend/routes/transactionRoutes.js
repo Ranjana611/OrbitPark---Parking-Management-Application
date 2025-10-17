@@ -49,11 +49,11 @@ router.get(
   transactionController.getTransactionById
 );
 
-// Get revenue statistics (Admin only)
+// Get revenue statistics (Admin and Staff)
 router.get(
   '/stats/revenue',
   verifyToken,
-  checkRole(['admin']),
+  checkRole(['admin', 'staff']),
   transactionController.getRevenueStats
 );
 

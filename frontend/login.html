@@ -17,7 +17,7 @@
             <div class="inline-block p-4 bg-indigo-600 rounded-full mb-4">
                 <i class="fas fa-parking text-white text-4xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-800">Parking Management</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Orbit Park</h1>
             <p class="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
@@ -151,9 +151,29 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log('Login successful, saving data...', data);
+
                     // Save user data to localStorage
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
+                     try {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+
+                        // Verify data was saved
+                        const savedToken = localStorage.getItem('token');
+                        const savedUser = localStorage.getItem('user');
+                        console.log('Saved token:', savedToken);
+                        console.log('Saved user:', savedUser);
+
+                        if (!savedToken || !savedUser) {
+                            throw new Error('Failed to save to localStorage');
+                        }
+                    } catch (error) {
+                        console.error('localStorage error:', error);
+                        showAlert('Error saving login data. Please try again.', 'error');
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Sign In';
+                        return;
+                    }
 
                     showAlert('Login successful! Redirecting...', 'success');
 
@@ -188,7 +208,7 @@
             const credentials = {
                 admin: { email: 'admin@parking.com', password: 'password123' },
                 staff: { email: 'staff@parking.com', password: 'password123' },
-                customer: { email: 'john@customer.com', password: 'password123' }
+                customer: { email: 'elon@customer.com', password: 'password123' }
             };
 
             document.getElementById('email').value = credentials[role].email;

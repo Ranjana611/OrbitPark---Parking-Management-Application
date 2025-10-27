@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Parking Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Navigation -->
+    <nav class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-user-tie text-2xl"></i>
+                    <span class="text-xl font-bold">Staff Portal</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userName" class="text-sm"></span>
+                    <button onclick="logout()" class="bg-green-700 hover:bg-green-800 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Available Spaces -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Available Spaces</p>
+                        <p id="availableSpaces" class="text-3xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Currently Parked -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Currently Parked</p>
+                        <p id="occupiedSpaces" class="text-3xl font-bold text-orange-600">0</p>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-full">
+                        <i class="fas fa-car text-orange-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Revenue -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Revenue</p>
+                        <p id="todayRevenue" class="text-3xl font-bold text-purple-600">$0</p>
+                    </div>
+                    <div class="bg-purple-100 p-4 rounded-full">
+                        <i class="fas fa-dollar-sign text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+            <!-- Vehicle Entry -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-green-600">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Vehicle Entry
+                </h2>
+                <form id="entryForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">License Plate</label>
+                        <input type="text" id="entryLicensePlate" required
+                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 uppercase"
+                            placeholder="Enter license plate (e.g., ABC123)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Space Type (Optional)</label>
+                        <select id="entrySpaceType"
+                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                            <option value="">Any Available</option>
+                            <option value="regular">Regular</option>
+                            <option value="handicap">Handicap</option>
+                            <option value="ev_charging">EV Charging</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                        <i class="fas fa-car mr-2"></i>Check In Vehicle
+                    </button>
+                </form>
+            </div>
+
+            <!-- Vehicle Exit -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-red-600">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Vehicle Exit
+                </h2>
+                <form id="exitForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">License Plate</label>
+                        <input type="text" id="exitLicensePlate" required
+                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 uppercase"
+                            placeholder="Enter license plate (e.g., ABC123)">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition">
+                        <i class="fas fa-dollar-sign mr-2"></i>Check Out & Calculate Fee
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Currently Parked Vehicles -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-list mr-2"></i>Currently Parked Vehicles
+                </h2>
+                <button onclick="loadActiveVehicles()" class="text-green-600 hover:text-green-700">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+            <div id="activeVehiclesList">
+                <div class="flex items-center justify-center py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receiptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="inline-block p-4 bg-green-100 rounded-full mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold">Payment Receipt</h3>
+            </div>
+
+            <div id="receiptContent" class="space-y-3 border-t border-b py-4 my-4">
+                <!-- Receipt details will be inserted here -->
+            </div>
+
+            <button onclick="closeReceiptModal()"
+                class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_URL = 'http://localhost:5000/api';
+
+        // Utility Functions
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('user');
+            return userStr ? JSON.parse(userStr) : null;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transition-all transform translate-x-0 ${type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' :
+                        'bg-blue-500'
+                } text-white`;
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatCurrency(amount) {
+            return `$${parseFloat(amount).toFixed(2)}`;
+        }
+
+        function calculateDuration(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = endDate ? new Date(endDate) : new Date();
+            const diffMs = end - start;
+            const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+            return diffHours;
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const token = getToken();
+
+            if (!token) {
+                console.error('No token available for API call');
+                return { success: false, message: 'No authentication token' };
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+
+            headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                console.log('API Call:', endpoint, 'with token:', token.substring(0, 20) + '...');
+
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    ...options,
+                    headers,
+                });
+
+                console.log('API Response status:', response.status);
+
+                if (response.status === 401) {
+                    console.error('401 Unauthorized - token invalid or expired');
+                    alert('Your session has expired. Please login again.');
+                    logout();
+                    return null;
+                }
+
+                if (response.status === 403) {
+                    console.error('403 Forbidden - insufficient permissions');
+                    const errorData = await response.json();
+                    console.error('Error details:', errorData);
+                    alert('Access denied: ' + (errorData.message || 'Insufficient permissions'));
+                    // Don't logout, just return error
+                    return { success: false, message: errorData.message || 'Access denied' };
+                }
+
+                const data = await response.json();
+                console.log('API Response data:', data);
+
+                return data;
+            } catch (error) {
+                console.error('API call error:', error);
+                return { success: false, message: 'Network error: ' + error.message };
+            }
+        }
+
+        // Check authentication
+        const user = getCurrentUser();
+        const token = getToken();
+
+        if (!token || !user) {
+            window.location.href = 'login.html';
+        } else if (user.role !== 'staff' && user.role !== 'admin') {
+            alert('Access denied. Staff only area.');
+            if (user.role === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+            } else if (user.role === 'customer') {
+                window.location.href = 'customer-dashboard.html';
+            } else {
+                window.location.href = 'login.html';
+            }
+        } else {
+            document.getElementById('userName').textContent = user.name;
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                await loadStats();
+                await loadActiveVehicles();
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const stats = await apiCall('/parking/stats');
+                if (stats && stats.success) {
+                    document.getElementById('availableSpaces').textContent = stats.stats.available || 0;
+                    document.getElementById('occupiedSpaces').textContent = stats.stats.occupied || 0;
+                }
+
+                const revenue = await apiCall('/transactions/stats/revenue');
+                if (revenue && revenue.success) {
+                    document.getElementById('todayRevenue').textContent = formatCurrency(revenue.stats.totalRevenue || 0);
+                }
+            } catch (error) {
+                console.error('Stats load error:', error);
+            }
+        }
+
+        // Vehicle Entry Form
+        document.getElementById('entryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const licensePlate = document.getElementById('entryLicensePlate').value.toUpperCase();
+            const spaceType = document.getElementById('entrySpaceType').value;
+
+            const data = { licensePlate };
+            if (spaceType) data.spaceType = spaceType;
+
+            const result = await apiCall('/transactions/entry', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result && result.success) {
+                showToast(`Vehicle ${licensePlate} checked in successfully!`, 'success');
+                document.getElementById('entryForm').reset();
+                loadDashboard();
+            } else {
+                showToast(result?.message || 'Failed to check in vehicle', 'error');
+            }
+        });
+
+        // Vehicle Exit Form
+        document.getElementById('exitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const licensePlate = document.getElementById('exitLicensePlate').value.toUpperCase();
+
+            const result = await apiCall('/transactions/exit', {
+                method: 'POST',
+                body: JSON.stringify({ licensePlate })
+            });
+
+            if (result && result.success) {
+                showReceipt(result.transaction);
+                document.getElementById('exitForm').reset();
+                loadDashboard();
+            } else {
+                showToast(result?.message || 'Failed to check out vehicle', 'error');
+            }
+        });
+
+        // Load active vehicles
+        async function loadActiveVehicles() {
+            const list = document.getElementById('activeVehiclesList');
+            list.innerHTML = '<div class="flex items-center justify-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-green-600"></i></div>';
+
+            try {
+                const data = await apiCall('/transactions/active');
+
+                if (data && data.success) {
+                    if (data.transactions.length === 0) {
+                        list.innerHTML = '<p class="text-gray-500 text-center py-8">No vehicles currently parked</p>';
+                        return;
+                    }
+
+                    list.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">License Plate</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Space</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Entry Time</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Duration</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Current Fee</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    ${data.transactions.map(t => {
+                        const duration = calculateDuration(t.entryTime);
+                        const currentFee = duration * (t.hourlyRate || 0);
+                        return `
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 font-bold">${t.vehicleId?.licensePlate || 'N/A'}</td>
+                                                <td class="px-4 py-3">${t.parkingSpaceId?.spaceNumber || 'N/A'}</td>
+                                                <td class="px-4 py-3">
+                                                    <span class="px-2 py-1 text-xs rounded-full ${t.spaceType === 'ev_charging' ? 'bg-blue-100 text-blue-700' :
+                                t.spaceType === 'handicap' ? 'bg-purple-100 text-purple-700' :
+                                    'bg-gray-100 text-gray-700'
+                            }">
+                                                        ${t.spaceType?.replace('_', ' ').toUpperCase() || 'REGULAR'}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm">${formatDate(t.entryTime)}</td>
+                                                <td class="px-4 py-3">${duration} hr(s)</td>
+                                                <td class="px-4 py-3 font-bold text-green-600">${formatCurrency(currentFee)}</td>
+                                                <td class="px-4 py-3">
+                                                    <button 
+                                                        onclick="quickExit('${t.vehicleId?.licensePlate || ''}')" 
+                                                        class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                                                    >
+                                                        <i class="fas fa-sign-out-alt mr-1"></i>Exit
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
+                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-8">Error loading vehicles</p>';
+                }
+            } catch (error) {
+                console.error('Load active vehicles error:', error);
+                list.innerHTML = '<p class="text-red-500 text-center py-8">Error loading vehicles</p>';
+            }
+        }
+
+        // Quick exit from table
+        async function quickExit(licensePlate) {
+            if (!confirm(`Check out vehicle ${licensePlate}?`)) return;
+
+            const result = await apiCall('/transactions/exit', {
+                method: 'POST',
+                body: JSON.stringify({ licensePlate })
+            });
+
+            if (result && result.success) {
+                showReceipt(result.transaction);
+                loadDashboard();
+            } else {
+                showToast(result?.message || 'Failed to check out vehicle', 'error');
+            }
+        }
+
+        // Show receipt modal
+        function showReceipt(transaction) {
+            const receipt = transaction.receipt;
+            const content = document.getElementById('receiptContent');
+
+            content.innerHTML = `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">License Plate:</span>
+                    <span class="font-bold">${receipt.licensePlate}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Space Number:</span>
+                    <span class="font-bold">${receipt.spaceNumber}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Entry Time:</span>
+                    <span class="text-sm">${formatDate(receipt.entryTime)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Exit Time:</span>
+                    <span class="text-sm">${formatDate(receipt.exitTime)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Duration:</span>
+                    <span class="font-bold">${receipt.duration}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Hourly Rate:</span>
+                    <span class="font-bold">${receipt.hourlyRate}</span>
+                </div>
+                <div class="flex justify-between text-lg pt-2 border-t">
+                    <span class="text-gray-800 font-bold">Total Fee:</span>
+                    <span class="font-bold text-green-600">${receipt.totalFee}</span>
+                </div>
+            `;
+
+            document.getElementById('receiptModal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.add('hidden');
+        }
+
+        // Initialize - only if authenticated
+        if (user && token && (user.role === 'staff' || user.role === 'admin')) {
+            loadDashboard();
+
+            // Auto-refresh every 30 seconds
+            setInterval(loadActiveVehicles, 30000);
+        }
+    </script>
+</body>
+
+</html>
